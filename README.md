@@ -16,8 +16,8 @@ Aplicación web desarrollada como Trabajo Práctico N.° 2 de la cátedra Progra
 
 ## Funcionalidades Principales
 * **Registro de Usuarios:** Permite dar de alta a nuevos usuarios en el sistema sin necesidad de un logueo previo.
-* **Gestión de Exámenes (ABM):** Cada usuario puede crear, editar, modificar y eliminar sus propios exámenes de forma aislada y segura.
-* **Gestión de Preguntas (ABM):** Alta, baja y modificación de preguntas asociadas exclusivamente a los exámenes de cada usuario.
+* **Gestión de Exámenes (ABM):** Cada usuario puede crear, editar y eliminar sus propios exámenes de forma aislada y segura.
+* **Gestión de Preguntas (ABM):** Alta, edición y eliminación de preguntas asociadas exclusivamente a los exámenes de cada usuario.
 * **Sorteo Aleatorio:** Permite al usuario seleccionar la cantidad de preguntas que desea extraer al azar de un examen determinado, garantizando que no se repita ninguna pregunta en el sorteo.
 
 
