@@ -107,6 +107,7 @@ input:focus, textarea:focus { border-color: #79a184; box-shadow: 0 0 0 3px #4a76
 .exam-title-row { display: flex; justify-content: space-between; align-items: start; gap: 15px; padding: 3px 0 22px; border-bottom: 1px solid #eff1ec; }
 .exam-title-row .eyebrow { margin-bottom: 7px; font-size: 9px; }
 .exam-title-row h2 { margin-bottom: 5px; font: 700 22px 'Manrope', sans-serif; letter-spacing: -.55px; }
+.exam-actions { display: flex; flex-wrap: wrap; justify-content: end; gap: 7px; }
 .exam-title-row .button { min-height: 34px; padding: 0 10px; font-size: 10px; }
 .content-grid { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 18px; padding-top: 20px; }
 .content-card { min-width: 0; }
@@ -117,6 +118,9 @@ input:focus, textarea:focus { border-color: #79a184; box-shadow: 0 0 0 3px #4a76
 .question-list { padding-top: 6px; }
 .question-item { display: flex; align-items: start; justify-content: space-between; gap: 10px; padding: 14px 0; border-bottom: 1px solid #eff1ec; }
 .question-item-copy { min-width: 0; }
+.question-actions { display: flex; flex: 0 0 auto; gap: 2px; }
+.edit-question-button { color: #748774; }
+.edit-question-button:hover { color: var(--green-dark); background: var(--green-pale); }
 .question-item-copy > p { margin: 0; color: #4a5148; font-size: 12px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 .question-item-copy details, .drawn-question details { margin-top: 8px; color: #737d70; font-size: 11px; }
 .question-item-copy summary, .drawn-question summary { cursor: pointer; color: var(--green); font-weight: 600; }
@@ -185,5 +189,6 @@ input:focus, textarea:focus { border-color: #79a184; box-shadow: 0 0 0 3px #4a76
     .draw-card h3 { clear: both; }
     .exam-title-row { gap: 7px; }
     .exam-title-row h2 { font-size: 19px; }
+    .exam-actions { flex-direction: column; }
     .exam-title-row .button { padding: 0 7px; font-size: 9px; }
 }

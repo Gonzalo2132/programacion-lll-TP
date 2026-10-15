@@ -4,38 +4,38 @@ CREATE DATABASE IF NOT EXISTS banco_preguntas
 
 USE banco_preguntas;
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS usuarios (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(190) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(190) NOT NULL,
+    clave_hash VARCHAR(255) NOT NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    UNIQUE KEY uq_users_email (email)
+    UNIQUE KEY uq_usuarios_correo (correo)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS exams (
+CREATE TABLE IF NOT EXISTS examenes (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user_id BIGINT UNSIGNED NOT NULL,
-    title VARCHAR(150) NOT NULL,
-    description TEXT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario_id BIGINT UNSIGNED NOT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descripcion TEXT NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    KEY idx_exams_user_id (user_id),
-    CONSTRAINT fk_exams_user
-        FOREIGN KEY (user_id) REFERENCES users (id)
+    KEY idx_examenes_usuario_id (usuario_id),
+    CONSTRAINT fk_examenes_usuario
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS questions (
+CREATE TABLE IF NOT EXISTS preguntas (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    exam_id BIGINT UNSIGNED NOT NULL,
-    question_text MEDIUMTEXT NOT NULL,
-    answer_text MEDIUMTEXT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    examen_id BIGINT UNSIGNED NOT NULL,
+    texto_pregunta MEDIUMTEXT NOT NULL,
+    texto_respuesta MEDIUMTEXT NULL,
+    creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    KEY idx_questions_exam_id (exam_id),
-    CONSTRAINT fk_questions_exam
-        FOREIGN KEY (exam_id) REFERENCES exams (id)
+    KEY idx_preguntas_examen_id (examen_id),
+    CONSTRAINT fk_preguntas_examen
+        FOREIGN KEY (examen_id) REFERENCES examenes (id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB;

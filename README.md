@@ -23,8 +23,11 @@ Aplicación web desarrollada como Trabajo Práctico N.° 2 de la cátedra Progra
 
 
 ### 1. Base de Datos
-1. Importar el archivo `database.sql` (ubicado en el repositorio) en tu gestor de base de datos MySQL para crear la estructura relacional de `usuarios`, `examen` y `preguntas`.
-2. Configurar las credenciales de conexión a la base de datos en el archivo correspondiente de PHP del proyecto.
+1. Para una instalación nueva, importar `database.sql` en MySQL. El archivo crea la base `banco_preguntas` y las tablas `usuarios`, `examenes` y `preguntas`.
+2. Si ya tenés la versión anterior instalada, hacé una copia de seguridad de la base y ejecutá una sola vez `migrar_a_espanol.sql`. El script conserva los datos y cambia los nombres de las tablas y columnas.
+3. La conexión usa MySQL en `127.0.0.1:3306`, con el usuario `root` y contraseña vacía por defecto. Para cambiar estos datos, definir las variables de entorno `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`.
+
+Las tablas y columnas de la base están en español. La API conserva los nombres de datos que utiliza la interfaz, por lo que no es necesario cambiar el JavaScript.
 
 ### 2. Ejecución
 * Desplegar el proyecto en un entorno de servidor local (como XAMPP o WampServer).

@@ -105,7 +105,8 @@ try {
             }
 
             $statement = $db->prepare(
-                'INSERT INTO users (name, email, password_hash) VALUES (:name, :email, :password_hash)'
+                'INSERT INTO usuarios (nombre, correo, clave_hash)
+                 VALUES (:name, :email, :password_hash)'
             );
             try {
                 $statement->execute([
@@ -133,7 +134,8 @@ try {
             }
 
             $statement = $db->prepare(
-                'SELECT id, name, password_hash FROM users WHERE email = :email'
+                'SELECT id, nombre AS name, clave_hash AS password_hash
+                 FROM usuarios WHERE correo = :email'
             );
             $statement->execute(['email' => $email]);
             $user = $statement->fetch();
@@ -149,13 +151,13 @@ try {
         case 'list_exams':
             $userId = authenticatedUserId();
             $statement = $db->prepare(
-                'SELECT e.id, e.title, e.description, e.created_at,
-                        COUNT(q.id) AS question_count
-                 FROM exams e
-                 LEFT JOIN questions q ON q.exam_id = e.id
-                 WHERE e.user_id = :user_id
+                'SELECT e.id, e.titulo AS title, e.descripcion AS description,
+                        e.creado_en AS created_at, COUNT(p.id) AS question_count
+                 FROM examenes e
+                 LEFT JOIN preguntas p ON p.examen_id = e.id
+                 WHERE e.usuario_id = :user_id
                  GROUP BY e.id
-                 ORDER BY e.created_at DESC, e.id DESC'
+                 ORDER BY e.creado_en DESC, e.id DESC'
             );
             $statement->execute(['user_id' => $userId]);
             respond(200, ['exams' => $statement->fetchAll()]);
@@ -169,7 +171,8 @@ try {
             }
 
             $statement = $db->prepare(
-                'INSERT INTO exams (user_id, title, description) VALUES (:user_id, :title, :description)'
+                'INSERT INTO examenes (usuario_id, titulo, descripcion)
+                 VALUES (:user_id, :title, :description)'
             );
             $statement->execute([
                 'user_id' => $userId,
@@ -178,6 +181,31 @@ try {
             ]);
             respond(201, ['id' => (int) $db->lastInsertId()]);
 
+        case 'update_exam':
+            $userId = authenticatedUserId();
+            $examId = filter_var($data['exam_id'] ?? null, FILTER_VALIDATE_INT);
+            if (!$examId || $examId < 1) {
+                respond(422, ['error' => 'Seleccioná un examen válido.']);
+            }
+            ownedExam($db, $examId, $userId);
+            $title = requiredString($data, 'title', 150);
+            $description = $data['description'] ?? '';
+            if (!is_string($description) || mb_strlen(trim($description)) > 5000) {
+                respond(422, ['error' => 'La descripción no puede superar los 5000 caracteres.']);
+            }
+
+            $statement = $db->prepare(
+                'UPDATE examenes SET titulo = :title, descripcion = :description
+                 WHERE id = :id AND usuario_id = :user_id'
+            );
+            $statement->execute([
+                'title' => $title,
+                'description' => trim($description) === '' ? null : trim($description),
+                'id' => $examId,
+                'user_id' => $userId,
+            ]);
+            respond(200, ['message' => 'Examen actualizado.']);
+
         case 'delete_exam':
             $userId = authenticatedUserId();
             $examId = filter_var($data['exam_id'] ?? null, FILTER_VALIDATE_INT);
@@ -185,7 +213,7 @@ try {
                 respond(422, ['error' => 'Seleccioná un examen válido.']);
             }
             ownedExam($db, $examId, $userId);
-            $statement = $db->prepare('DELETE FROM exams WHERE id = :id AND user_id = :user_id');
+            $statement = $db->prepare('DELETE FROM examenes WHERE id = :id AND usuario_id = :user_id');
             $statement->execute(['id' => $examId, 'user_id' => $userId]);
             respond(200, ['message' => 'Examen eliminado.']);
 
@@ -197,8 +225,9 @@ try {
             }
             ownedExam($db, $examId, $userId);
             $statement = $db->prepare(
-                'SELECT id, question_text, answer_text, created_at
-                 FROM questions WHERE exam_id = :exam_id ORDER BY id DESC'
+                'SELECT id, texto_pregunta AS question_text,
+                        texto_respuesta AS answer_text, creado_en AS created_at
+                 FROM preguntas WHERE examen_id = :exam_id ORDER BY id DESC'
             );
             $statement->execute(['exam_id' => $examId]);
             respond(200, ['questions' => $statement->fetchAll()]);
@@ -217,7 +246,7 @@ try {
             }
 
             $statement = $db->prepare(
-                'INSERT INTO questions (exam_id, question_text, answer_text)
+                'INSERT INTO preguntas (examen_id, texto_pregunta, texto_respuesta)
                  VALUES (:exam_id, :question_text, :answer_text)'
             );
             $statement->execute([
@@ -226,6 +255,42 @@ try {
                 'answer_text' => trim($answer) === '' ? null : trim($answer),
             ]);
             respond(201, ['id' => (int) $db->lastInsertId()]);
+
+        case 'update_question':
+            $userId = authenticatedUserId();
+            $examId = filter_var($data['exam_id'] ?? null, FILTER_VALIDATE_INT);
+            $questionId = filter_var($data['question_id'] ?? null, FILTER_VALIDATE_INT);
+            if (!$examId || $examId < 1 || !$questionId || $questionId < 1) {
+                respond(422, ['error' => 'Seleccioná una pregunta válida.']);
+            }
+            ownedExam($db, $examId, $userId);
+            $question = requiredString($data, 'question_text', 20000);
+            $answer = $data['answer_text'] ?? '';
+            if (!is_string($answer) || mb_strlen(trim($answer)) > 20000) {
+                respond(422, ['error' => 'La respuesta no puede superar los 20000 caracteres.']);
+            }
+
+            $statement = $db->prepare(
+                'UPDATE preguntas SET texto_pregunta = :question_text,
+                        texto_respuesta = :answer_text
+                 WHERE id = :id AND examen_id = :exam_id'
+            );
+            $statement->execute([
+                'question_text' => $question,
+                'answer_text' => trim($answer) === '' ? null : trim($answer),
+                'id' => $questionId,
+                'exam_id' => $examId,
+            ]);
+            if ($statement->rowCount() === 0) {
+                $statement = $db->prepare(
+                    'SELECT 1 FROM preguntas WHERE id = :id AND examen_id = :exam_id'
+                );
+                $statement->execute(['id' => $questionId, 'exam_id' => $examId]);
+                if (!$statement->fetchColumn()) {
+                    respond(404, ['error' => 'No se encontró la pregunta solicitada.']);
+                }
+            }
+            respond(200, ['message' => 'Pregunta actualizada.']);
 
         case 'delete_question':
             $userId = authenticatedUserId();
@@ -236,7 +301,7 @@ try {
             }
             ownedExam($db, $examId, $userId);
             $statement = $db->prepare(
-                'DELETE FROM questions WHERE id = :id AND exam_id = :exam_id'
+                'DELETE FROM preguntas WHERE id = :id AND examen_id = :exam_id'
             );
             $statement->execute(['id' => $questionId, 'exam_id' => $examId]);
             if ($statement->rowCount() === 0) {
@@ -253,7 +318,7 @@ try {
             }
             ownedExam($db, $examId, $userId);
 
-            $statement = $db->prepare('SELECT COUNT(*) FROM questions WHERE exam_id = :exam_id');
+            $statement = $db->prepare('SELECT COUNT(*) FROM preguntas WHERE examen_id = :exam_id');
             $statement->execute(['exam_id' => $examId]);
             $available = (int) $statement->fetchColumn();
             if ($count > $available) {
@@ -261,8 +326,9 @@ try {
             }
 
             $statement = $db->prepare(
-                'SELECT id, question_text, answer_text
-                 FROM questions WHERE exam_id = :exam_id
+                'SELECT id, texto_pregunta AS question_text,
+                        texto_respuesta AS answer_text
+                 FROM preguntas WHERE examen_id = :exam_id
                  ORDER BY RAND() LIMIT ' . (int) $count
             );
             $statement->execute(['exam_id' => $examId]);

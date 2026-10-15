@@ -103,7 +103,10 @@ if (!isset($_SESSION['csrf_token'])) {
                                 <h2 id="selected-exam-title"></h2>
                                 <p id="selected-exam-description" class="section-subtitle"></p>
                             </div>
-                            <button class="button button-danger-quiet" id="delete-exam-button" type="button">Eliminar examen</button>
+                            <div class="exam-actions">
+                                <button class="button button-quiet" id="edit-exam-button" type="button">Editar examen</button>
+                                <button class="button button-danger-quiet" id="delete-exam-button" type="button">Eliminar examen</button>
+                            </div>
                         </div>
 
                         <div class="content-grid">
@@ -150,7 +153,7 @@ if (!isset($_SESSION['csrf_token'])) {
         <form id="exam-form" class="modal-content">
             <button class="modal-close" type="button" id="close-exam-dialog" aria-label="Cerrar">×</button>
             <p class="eyebrow">NUEVO BANCO</p>
-            <h2>Creá un examen</h2>
+            <h2 id="exam-dialog-title">Creá un examen</h2>
             <p class="section-subtitle">Podés agregar las preguntas ahora o volver más tarde.</p>
             <label for="exam-title">Nombre del examen</label>
             <input id="exam-title" name="title" type="text" maxlength="150" placeholder="Por ejemplo: Programación III" required>
@@ -158,7 +161,23 @@ if (!isset($_SESSION['csrf_token'])) {
             <textarea id="exam-description" name="description" rows="3" maxlength="5000" placeholder="Un detalle para identificarlo..."></textarea>
             <div class="modal-actions">
                 <button class="button button-quiet" type="button" id="cancel-exam-dialog">Cancelar</button>
-                <button class="button button-primary" type="submit">Crear examen</button>
+                <button class="button button-primary" id="save-exam-button" type="submit">Crear examen</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog class="modal" id="question-dialog">
+        <form id="question-edit-form" class="modal-content">
+            <button class="modal-close" type="button" id="close-question-dialog" aria-label="Cerrar">×</button>
+            <p class="eyebrow">BANCO DE PREGUNTAS</p>
+            <h2>Editar pregunta</h2>
+            <label for="edit-question-text">Pregunta</label>
+            <textarea id="edit-question-text" name="question_text" rows="4" maxlength="20000" required></textarea>
+            <label for="edit-answer-text">Respuesta o apunte <span class="label-hint">opcional</span></label>
+            <textarea id="edit-answer-text" name="answer_text" rows="3" maxlength="20000"></textarea>
+            <div class="modal-actions">
+                <button class="button button-quiet" type="button" id="cancel-question-dialog">Cancelar</button>
+                <button class="button button-primary" type="submit">Guardar cambios</button>
             </div>
         </form>
     </dialog>

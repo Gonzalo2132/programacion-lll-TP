@@ -1,6 +1,8 @@
 $(function () {
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     let selectedExamId = null;
+    let editingExamId = null;
+    let editingQuestionId = null;
     let exams = [];
     let toastTimer = null;
 
@@ -136,7 +138,17 @@ $(function () {
                 'data-question-id': question.id,
                 text: '×'
             });
-            list.append(item.append(copy, remove));
+            const edit = $('<button>', {
+                type: 'button',
+                class: 'icon-button edit-question-button',
+                title: 'Editar pregunta',
+                'aria-label': 'Editar pregunta',
+                'data-question-id': question.id,
+                'data-question-text': question.question_text,
+                'data-answer-text': question.answer_text || '',
+                text: '✎'
+            });
+            list.append(item.append(copy, $('<div>', { class: 'question-actions' }).append(edit, remove)));
         });
     }
 
@@ -169,6 +181,27 @@ $(function () {
     });
 
     $('#new-exam-button, #empty-new-exam-button').on('click', function () {
+        editingExamId = null;
+        $('#exam-form')[0].reset();
+        $('#exam-dialog-title').text('Creá un examen');
+        $('#save-exam-button').text('Crear examen');
+        $('#exam-dialog .eyebrow').text('NUEVO BANCO');
+        $('#exam-dialog')[0].showModal();
+        $('#exam-title').trigger('focus');
+    });
+
+    $('#edit-exam-button').on('click', function () {
+        const exam = exams.find(function (item) { return Number(item.id) === Number(selectedExamId); });
+        if (!exam) {
+            return;
+        }
+        editingExamId = Number(exam.id);
+        $('#exam-form')[0].reset();
+        $('#exam-title').val(exam.title);
+        $('#exam-description').val(exam.description || '');
+        $('#exam-dialog-title').text('Editar examen');
+        $('#save-exam-button').text('Guardar cambios');
+        $('#exam-dialog .eyebrow').text('BANCO DE PREGUNTAS');
         $('#exam-dialog')[0].showModal();
         $('#exam-title').trigger('focus');
     });
@@ -180,11 +213,17 @@ $(function () {
     $('#exam-form').on('submit', function (event) {
         event.preventDefault();
         const values = Object.fromEntries(new FormData(this).entries());
-        request('create_exam', values).done(function (response) {
+        const action = editingExamId ? 'update_exam' : 'create_exam';
+        if (editingExamId) {
+            values.exam_id = editingExamId;
+        }
+        request(action, values).done(function (response) {
+            const examId = editingExamId || response.id;
+            editingExamId = null;
             $('#exam-dialog')[0].close();
             $('#exam-form')[0].reset();
-            showToast('El examen se creó correctamente.');
-            loadExams(response.id);
+            showToast(action === 'create_exam' ? 'El examen se creó correctamente.' : 'El examen se actualizó.');
+            loadExams(examId);
         }).fail(showError);
     });
 
@@ -217,6 +256,35 @@ $(function () {
             showToast('La pregunta se eliminó.');
             loadQuestions();
             loadExams(selectedExamId);
+        }).fail(showError);
+    });
+
+    $('#question-list').on('click', '.edit-question-button', function () {
+        editingQuestionId = Number($(this).data('question-id'));
+        $('#edit-question-text').val($(this).attr('data-question-text'));
+        $('#edit-answer-text').val($(this).attr('data-answer-text'));
+        $('#question-dialog')[0].showModal();
+        $('#edit-question-text').trigger('focus');
+    });
+
+    $('#close-question-dialog, #cancel-question-dialog').on('click', function () {
+        $('#question-dialog')[0].close();
+        editingQuestionId = null;
+    });
+
+    $('#question-edit-form').on('submit', function (event) {
+        event.preventDefault();
+        if (!selectedExamId || !editingQuestionId) {
+            return;
+        }
+        const values = Object.fromEntries(new FormData(this).entries());
+        values.exam_id = selectedExamId;
+        values.question_id = editingQuestionId;
+        request('update_question', values).done(function () {
+            $('#question-dialog')[0].close();
+            editingQuestionId = null;
+            showToast('La pregunta se actualizó.');
+            loadQuestions();
         }).fail(showError);
     });
 
